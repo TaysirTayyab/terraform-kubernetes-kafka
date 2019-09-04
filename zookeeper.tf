@@ -1,6 +1,3 @@
-variable "ZOOKEEPER_SERVERS_DEFAULT" {
-  default = "zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888"
-}
 resource "kubernetes_service" "zookeeper-client" {
   metadata {
     name      = "kafka-zookeeper-client"
@@ -67,8 +64,7 @@ resource "kubernetes_stateful_set" "zookeeper" {
 
     service_name = "kafka-zookeeper-headless"
 
-    # START HERE
-    replicas = "1"
+    replicas = "${var.zookeeper-replicas}"
 
     template {
       metadata {
@@ -78,8 +74,9 @@ resource "kubernetes_stateful_set" "zookeeper" {
       }
       spec {
         container {
-          image = "confluentinc/cp-zookeeper"
+          image = "k8s.gcr.io/kubernetes-zookeeper:1.0-3.4.10"
           name = "zookeeper"
+          command = ["sh", "-c", "start-zookeeper --servers=${var.zookeeper-replicas} --data_dir=/zookeeper/data"]
 
           port {
             container_port = 2181
@@ -96,11 +93,6 @@ resource "kubernetes_stateful_set" "zookeeper" {
             name = "election"
           }
 
-          env {
-            name  = "ZOOKEEPER_CLIENT_PORT"
-            value = "2181"
-          }
-
           volume_mount {
             name = "data"
             mount_path = "/zookeeper/data"
@@ -115,3 +107,4 @@ resource "kubernetes_stateful_set" "zookeeper" {
     }
   }
 }
+
