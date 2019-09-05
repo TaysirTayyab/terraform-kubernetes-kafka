@@ -1,8 +1,15 @@
-resource "kubernetes_service" "zookeeper-client" {
+data "template_file" "zookeeper_host_names" {
+  count    = "${var.zookeeper-replicas}"
+  template = "zookeeper-${count.index}.${kubernetes_service.zookeeper.metadata.0.name}.${var.kube_namespace}.svc.cluster.local"
+}
+
+resource "kubernetes_service" "zookeeper" {
   metadata {
-    name      = "kafka-zookeeper-client"
+    name      = "kafka-zookeeper-headless"
     namespace = "${var.kube_namespace}"
+
   }
+
   spec {
     selector {
       app = "kafka-zookeeper"
@@ -12,20 +19,6 @@ resource "kubernetes_service" "zookeeper-client" {
       port        = 2181
       target_port = 2181
       name        = "client"
-    }
-  }
-}
-
-
-resource "kubernetes_service" "zookeeper-headless" {
-  metadata {
-    name      = "kafka-zookeeper-headless"
-    namespace = "${var.kube_namespace}"
-  }
-
-  spec {
-    selector {
-      app = "kafka-zookeeper"
     }
 
     port {
@@ -46,8 +39,8 @@ resource "kubernetes_service" "zookeeper-headless" {
 }
 
 
-
 resource "kubernetes_stateful_set" "zookeeper" {
+
   metadata {
     name      = "zookeeper"
     namespace = "${var.kube_namespace}"
@@ -74,9 +67,17 @@ resource "kubernetes_stateful_set" "zookeeper" {
       }
       spec {
         container {
-          image = "k8s.gcr.io/kubernetes-zookeeper:1.0-3.4.10"
+          image = "confluentinc/cp-zookeeper"
           name = "zookeeper"
-          command = ["sh", "-c", "start-zookeeper --servers=${var.zookeeper-replicas} --data_dir=/zookeeper/data"]
+          command = [
+            "bash",
+            "-c",
+            <<EOF
+ZOOKEEPER_SERVER_ID=$(($${HOSTNAME##*-}+1)) \
+/etc/confluent/docker/run
+EOF
+            ,
+          ]
 
           port {
             container_port = 2181
@@ -93,6 +94,16 @@ resource "kubernetes_stateful_set" "zookeeper" {
             name = "election"
           }
 
+          env {
+            name  = "ZOOKEEPER_CLIENT_PORT"
+            value = "2181"
+          }
+
+          env {
+            name  = "ZOOKEEPER_SERVERS"
+            value = "${join(";", formatlist("%s:2888:3888", data.template_file.zookeeper_host_names.*.rendered))}"
+          }
+
           volume_mount {
             name = "data"
             mount_path = "/zookeeper/data"
@@ -107,4 +118,3 @@ resource "kubernetes_stateful_set" "zookeeper" {
     }
   }
 }
-
