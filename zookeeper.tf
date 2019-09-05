@@ -5,14 +5,14 @@ data "template_file" "zookeeper_host_names" {
 
 resource "kubernetes_service" "zookeeper" {
   metadata {
-    name      = "kafka-zookeeper-headless"
+    name      = "zookeeper"
     namespace = "${var.kube_namespace}"
 
   }
 
   spec {
     selector {
-      app = "kafka-zookeeper"
+      app = "zookeeper"
     }
 
     port {
@@ -46,28 +46,44 @@ resource "kubernetes_stateful_set" "zookeeper" {
     namespace = "${var.kube_namespace}"
 
     labels {
-      app       = "kafka-zookeeper"
+      app       = "zookeeper"
     }
   }
 
   spec {
     selector {
-      app = "kafka-zookeeper"
+      app = "zookeeper"
     }
 
-    service_name = "kafka-zookeeper-headless"
+    service_name = "zookeeper"
 
     replicas = "${var.zookeeper-replicas}"
 
     template {
       metadata {
         labels = {
-          app = "kafka-zookeeper"
+          app = "zookeeper"
         }
       }
       spec {
+        affinity {
+          pod_anti_affinity {
+            preferred_during_scheduling_ignored_during_execution {
+              weight = 100
+              pod_affinity_term {
+                label_selector {
+                  match_expressions {
+                    key = "app"
+                    operator = "In"
+                    values = ["zookeeper"]
+                  }
+                }
+              }
+            }
+          }
+        }
         container {
-          image = "confluentinc/cp-zookeeper"
+          image = "confluentinc/cp-zookeeper:${var.zookeeper_container_image_version}"
           name = "zookeeper"
           command = [
             "bash",

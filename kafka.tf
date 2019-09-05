@@ -53,8 +53,24 @@ resource "kubernetes_stateful_set" "kafka" {
         }
       }
       spec {
+        affinity {
+          pod_anti_affinity {
+            preferred_during_scheduling_ignored_during_execution {
+              weight = 100
+              pod_affinity_term {
+                label_selector {
+                  match_expressions {
+                    key = "app"
+                    operator = "In"
+                    values = ["kafka"]
+                  }
+                }
+              }
+            }
+          }
+        }
         container {
-          image = "confluentinc/cp-kafka"
+          image = "confluentinc/cp-kafka:${var.kafka_container_image_version}"
           name = "server"
 
           port {
@@ -77,7 +93,8 @@ resource "kubernetes_stateful_set" "kafka" {
 
           env {
             name = "KAFKA_ZOOKEEPER_CONNECT"
-            value = "kafka-zookeeper-client:2181"
+            # value = "zookeeper:2181"
+            value = "${join(",", data.template_file.zookeeper_host_names.*.rendered)}"
           }
           env {
             name = "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR"

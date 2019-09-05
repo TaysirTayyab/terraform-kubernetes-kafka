@@ -1,11 +1,9 @@
-output "kafka_service" {
-  value = "${kubernetes_service.kafka.metadata.0.name}"
+output "kafka_service_addresses" {
+  description = "A list of client service address for each of the Kafka replicas as host:port."
+  value       = "${formatlist("%s:9092", data.template_file.kafka_host_names.*.rendered)}"
 }
 
-output "kafka_port" {
-  value = "${kubernetes_service.kafka.spec.0.port.0.port}"
-}
-
-output "kafka_ip" {
-  value = "${kubernetes_service.kafka.spec.0.cluster_ip}"
+output "zookeeper_service_addresses" {
+  description = "A list of client service addresses for each of the Zookeeper replicas as host:port."
+  value       = "${formatlist("%s:2181", data.template_file.zookeeper_host_names.*.rendered)}"
 }
