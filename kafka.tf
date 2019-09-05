@@ -58,6 +58,7 @@ resource "kubernetes_stateful_set" "kafka" {
             preferred_during_scheduling_ignored_during_execution {
               weight = 100
               pod_affinity_term {
+                topology_key = "kubernetes.io/hostname"
                 label_selector {
                   match_expressions {
                     key = "app"
