@@ -7,7 +7,6 @@ resource "kubernetes_service" "zookeeper" {
   metadata {
     name      = "zookeeper"
     namespace = "${var.kube_namespace}"
-
   }
 
   spec {
@@ -34,19 +33,17 @@ resource "kubernetes_service" "zookeeper" {
     }
 
     cluster_ip = "None"
-
   }
 }
 
 
 resource "kubernetes_stateful_set" "zookeeper" {
-
   metadata {
     name      = "zookeeper"
     namespace = "${var.kube_namespace}"
 
     labels {
-      app       = "zookeeper"
+      app = "zookeeper"
     }
   }
 
@@ -56,7 +53,6 @@ resource "kubernetes_stateful_set" "zookeeper" {
     }
 
     service_name = "zookeeper"
-
     replicas = "${var.zookeeper-replicas}"
 
     template {
@@ -86,6 +82,9 @@ resource "kubernetes_stateful_set" "zookeeper" {
         container {
           image = "confluentinc/cp-zookeeper:${var.zookeeper_container_image_version}"
           name = "zookeeper"
+
+          # this hack is copied from the confluent helm chart
+          # https://github.com/confluentinc/cp-helm-charts/blob/master/charts/cp-zookeeper/templates/statefulset.yaml
           command = [
             "bash",
             "-c",

@@ -20,7 +20,6 @@ resource "kubernetes_service" "kafka" {
       name        = "client"
     }
     cluster_ip = "None"
-
   }
 }
 
@@ -87,6 +86,7 @@ resource "kubernetes_stateful_set" "kafka" {
               }
             }
           }
+
           env {
             name  = "KAFKA_ADVERTISED_LISTENERS"
             value = "PLAINTEXT://$(POD_NAME).${kubernetes_service.kafka.metadata.0.name}.${var.kube_namespace}.svc.cluster.local:9092"
@@ -119,6 +119,7 @@ resource "kubernetes_stateful_set" "kafka" {
         resources {
           requests {
             storage = "1Gi"
+
           }
         }
       }

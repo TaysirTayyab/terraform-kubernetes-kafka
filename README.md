@@ -1,16 +1,36 @@
-# terraform-kubernetes-kafka
-Terraform Module for Deploying Kafka in Kubernetes
+# Kafka Cluster w/ Zookeeper
 
-Usage
+This Terraform module deploys resources to a Kubernetes cluster to run a Kafka cluster. The following resources are deployed.
 
-module "wxt_integration_kafka" {
-  source = "git::ssh://git@wwwin-github.cisco.com:padunne/terraform-kubernetes-kafka.git"
-  kube_namespace = "${var.kube_namespace}"
-  kafka-replicas = "3"
-  zookeeper-replicas = "1"
+* a 1 node (configurable) Zookeeper cluster
+* a 1 node (configurable) Kafka cluster which registers with the ZK cluster
+
+## Usage
+
+The module is designed to function with minimal bootstrapping. Just provide the namespace where the kafka and zookeeper clusters will go and the module will handle the rest.
+
+```hcl
+module "kafka_zk_cluster" {
+  source = "git::git@wwwin-github.cisco.com:broadcloud-iac/terraform-kubernetes-kafka.git?v1.0.0"
+
+  kube_namespace = "my-namespace"
 }
+```
 
-Often we run 3 kafka nodes so set kafka-replicas to 3
-For this many nodes a single zookeeper node should suffice
-However we have in the past run 3 zookeeper nodes so change zookeeper-replicas as required
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|:----:|:-----:|:-----:|
+| kafka\_container\_image\_version | The Confluent Kafka image version. | string | `"5.3.0"` | no |
+| kafka\_replicas | The number of Kafka replicas to run. 3 is recommended for production. | string | `"1"` | no |
+| kube\_namespace | The namespace where the kafka cluster will be deployed. | string | n/a | yes |
+| zookeeper\_container\_image\_version | The Confluent Zookeeper image version. | string | `"5.3.0"` | no |
+| zookeeper\_replicas | The number of Zookeeper replicas to run. 3 is recommended for production. | string | `"1"` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| kafka\_service\_addresses | A list of client service address for each of the Kafka replicas as host:port. |
+| zookeeper\_service\_addresses | A list of client service addresses for each of the Zookeeper replicas as host:port. |
 
