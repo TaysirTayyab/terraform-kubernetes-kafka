@@ -1,5 +1,5 @@
 data "template_file" "zookeeper_host_names" {
-  count    = "${var.zookeeper_replicas}"
+  count    = "${var.zookeeper-replicas}"
   template = "zookeeper-${count.index}.${kubernetes_service.zookeeper.metadata.0.name}.${var.kube_namespace}.svc.cluster.local"
 }
 
@@ -23,7 +23,7 @@ resource "kubernetes_service" "zookeeper" {
     port {
       port        = 2888
       target_port = 2888
-      name        = "server"
+      name        = "followers"
     }
 
     port {
@@ -35,6 +35,7 @@ resource "kubernetes_service" "zookeeper" {
     cluster_ip = "None"
   }
 }
+
 
 resource "kubernetes_stateful_set" "zookeeper" {
   metadata {
@@ -52,19 +53,35 @@ resource "kubernetes_stateful_set" "zookeeper" {
     }
 
     service_name = "zookeeper"
-    replicas     = "${var.zookeeper_replicas}"
+    replicas = "${var.zookeeper-replicas}"
 
     template {
       metadata {
-        labels {
+        labels = {
           app = "zookeeper"
         }
       }
-
       spec {
+        affinity {
+          pod_anti_affinity {
+            preferred_during_scheduling_ignored_during_execution {
+              weight = 100
+              pod_affinity_term {
+                topology_key = "kubernetes.io/hostname"
+                label_selector {
+                  match_expressions {
+                    key = "app"
+                    operator = "In"
+                    values = ["zookeeper"]
+                  }
+                }
+              }
+            }
+          }
+        }
         container {
-          name  = "zookeeper"
           image = "confluentinc/cp-zookeeper:${var.zookeeper_container_image_version}"
+          name = "zookeeper"
 
           # this hack is copied from the confluent helm chart
           # https://github.com/confluentinc/cp-helm-charts/blob/master/charts/cp-zookeeper/templates/statefulset.yaml
@@ -78,26 +95,24 @@ EOF
             ,
           ]
 
-          resources {
-            limits {
-              cpu    = "100m"
-              memory = "250Mi"
-            }
+          port {
+            container_port = 2181
+            name = "client"
           }
 
-          env {
-            name = "ZOOKEEPER_SERVER_ID"
+          port {
+            container_port = 2888
+            name = "server"
+          }
 
-            value_from {
-              field_ref {
-                field_path = "metadata.name"
-              }
-            }
+          port {
+            container_port = 3888
+            name = "election"
           }
 
           env {
             name  = "ZOOKEEPER_CLIENT_PORT"
-            value = 2181
+            value = "2181"
           }
 
           env {
@@ -105,25 +120,15 @@ EOF
             value = "${join(";", formatlist("%s:2888:3888", data.template_file.zookeeper_host_names.*.rendered))}"
           }
 
-          env {
-            name  = "CONFLUENT_SUPPORT_METRICS_ENABLE"
-            value = "0"
+          volume_mount {
+            name = "data"
+            mount_path = "/zookeeper/data"
           }
+        }
 
-          port {
-            container_port = 2181
-            name           = "client"
-          }
-
-          port {
-            container_port = 2888
-            name           = "server"
-          }
-
-          port {
-            container_port = 3888
-            name           = "election"
-          }
+        volume {
+          name = "data"
+          empty_dir = {}
         }
       }
     }

@@ -33,3 +33,4 @@ module "kafka_zk_cluster" {
 |------|-------------|
 | kafka\_service\_addresses | A list of client service address for each of the Kafka replicas as host:port. |
 | zookeeper\_service\_addresses | A list of client service addresses for each of the Zookeeper replicas as host:port. |
+

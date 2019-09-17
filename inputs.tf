@@ -1,10 +1,13 @@
 variable "kube_namespace" {
-  description = "The namespace where the kafka cluster will be deployed."
+
+  default = ""
 }
 
-variable "kafka_replicas" {
-  description = "The number of Kafka replicas to run. 3 is recommended for production."
-  default     = 1
+variable "kafka-replicas" {
+  default = ""
+}
+variable "zookeeper-replicas" {
+  default = ""
 }
 
 variable "kafka_container_image_version" {

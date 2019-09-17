@@ -1,5 +1,5 @@
 data "template_file" "kafka_host_names" {
-  count    = "${var.kafka_replicas}"
+  count    = "${var.kafka-replicas}"
   template = "kafka-${count.index}.${kubernetes_service.kafka.metadata.0.name}.${var.kube_namespace}.svc.cluster.local"
 }
 
@@ -19,46 +19,62 @@ resource "kubernetes_service" "kafka" {
       target_port = 9092
       name        = "client"
     }
-
     cluster_ip = "None"
   }
 }
 
+
 resource "kubernetes_stateful_set" "kafka" {
+  depends_on = ["kubernetes_stateful_set.zookeeper"]
+
   metadata {
-    name      = "kafka"
+    name      = "kafka"  #???
     namespace = "${var.kube_namespace}"
 
     labels {
-      app = "kafka"
+      app       = "kafka"
     }
   }
 
   spec {
+    replicas = "${var.kafka-replicas}"
     selector {
       app = "kafka"
     }
 
     service_name = "kafka"
-    replicas     = "${var.kafka_replicas}"
+    replicas = "${var.kafka-replicas}"
 
     template {
       metadata {
-        labels {
+        labels = {
           app = "kafka"
         }
       }
-
       spec {
-        container {
-          name  = "kafka"
-          image = "confluentinc/cp-kafka:${var.kafka_container_image_version}"
-
-          resources {
-            limits {
-              cpu    = "100m"
-              memory = "250Mi"
+        affinity {
+          pod_anti_affinity {
+            preferred_during_scheduling_ignored_during_execution {
+              weight = 100
+              pod_affinity_term {
+                topology_key = "kubernetes.io/hostname"
+                label_selector {
+                  match_expressions {
+                    key = "app"
+                    operator = "In"
+                    values = ["kafka"]
+                  }
+                }
+              }
             }
+          }
+        }
+        container {
+          image = "confluentinc/cp-kafka:${var.kafka_container_image_version}"
+          name = "server"
+
+          port {
+            container_port = 9092
           }
 
           env {
@@ -77,18 +93,33 @@ resource "kubernetes_stateful_set" "kafka" {
           }
 
           env {
-            name  = "KAFKA_ZOOKEEPER_CONNECT"
+            name = "KAFKA_ZOOKEEPER_CONNECT"
+            # value = "zookeeper:2181"
             value = "${join(",", data.template_file.zookeeper_host_names.*.rendered)}"
           }
-
           env {
-            name  = "CONFLUENT_SUPPORT_METRICS_ENABLE"
-            value = "0"
+            name = "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR"
+            value = "${var.kafka-replicas}"
           }
 
-          port {
-            container_port = 9092
-            name           = "client"
+          volume_mount {
+            name = "kafka-data"
+            mount_path = "/opt/kafka/data"
+          }
+        }
+      }
+    }
+    volume_claim_templates {
+      metadata {
+        name = "kafka-data"
+      }
+      spec {
+        access_modes = ["ReadWriteOnce"]
+        storage_class_name = "standard"   # want a different type??
+        resources {
+          requests {
+            storage = "1Gi"
+
           }
         }
       }
