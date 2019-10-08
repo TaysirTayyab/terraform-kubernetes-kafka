@@ -49,7 +49,9 @@ resource "kubernetes_stateful_set" "zookeeper" {
 
   spec {
     selector {
-      app = "zookeeper"
+      match_labels {
+        app = "zookeeper"
+      }
     }
 
     service_name = "zookeeper"

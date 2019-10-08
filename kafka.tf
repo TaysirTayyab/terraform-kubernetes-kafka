@@ -39,7 +39,9 @@ resource "kubernetes_stateful_set" "kafka" {
   spec {
     replicas = "${var.kafka-replicas}"
     selector {
-      app = "kafka"
+      match_labels {
+        app = "kafka"
+      }
     }
 
     service_name = "kafka"
@@ -109,7 +111,7 @@ resource "kubernetes_stateful_set" "kafka" {
         }
       }
     }
-    volume_claim_templates {
+    volume_claim_template {
       metadata {
         name = "kafka-data"
       }
