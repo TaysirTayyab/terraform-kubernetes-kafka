@@ -11,7 +11,7 @@ The module is designed to function with minimal bootstrapping. Just provide the 
 
 ```hcl
 module "kafka_zk_cluster" {
-  source = "git::git@wwwin-github.cisco.com:broadcloud-iac/terraform-kubernetes-kafka.git?v1.0.0"
+  source = "git::https://wwwin-github.cisco.com/broadcloud-iac/terraform-kubernetes-kafka.git?v1.0.0"
 
   kube_namespace = "my-namespace"
 }
