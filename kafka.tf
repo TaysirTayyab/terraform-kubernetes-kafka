@@ -103,6 +103,14 @@ resource "kubernetes_stateful_set" "kafka" {
             name = "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR"
             value = "${var.kafka-replicas}"
           }
+          env {
+            name  = "KAFKA_NUM_PARTITIONS"
+            value = "${var.kafka-replicas}"
+          }
+          env {
+            name  = "KAFKA_DEFAULT_REPLICATION_FACTOR"
+            value = "${var.kafka-replicas}"
+          }
 
           volume_mount {
             name = "kafka-data"
