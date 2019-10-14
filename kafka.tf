@@ -1,3 +1,16 @@
+resource "kubernetes_config_map" "kafka_jmx_exporter_config" {
+  metadata {
+    name      = "kafka-jmx-exporter-config"
+    namespace = "${var.kube_namespace}"
+  }
+
+  data {
+    "config.yml" = <<EOF
+hostPort: localhost:9999
+EOF
+  }
+}
+
 data "template_file" "kafka_host_names" {
   count    = "${var.kafka-replicas}"
   template = "kafka-${count.index}.${kubernetes_service.kafka.metadata.0.name}.${var.kube_namespace}.svc.cluster.local"
@@ -52,7 +65,14 @@ resource "kubernetes_stateful_set" "kafka" {
         labels = {
           app = "kafka"
         }
+
+        annotations {
+          "prometheus.io/scrape" = "true"
+          "prometheus.io/path"   = "/"
+          "prometheus.io/port"   = 5556
+        }
       }
+
       spec {
         affinity {
           pod_anti_affinity {
@@ -111,12 +131,58 @@ resource "kubernetes_stateful_set" "kafka" {
             name  = "KAFKA_DEFAULT_REPLICATION_FACTOR"
             value = "${var.kafka-replicas}"
           }
+          env {
+            name  = "KAFKA_JMX_HOSTNAME"
+            value = "localhost"
+          }
+          env {
+            name  = "KAFKA_JMX_PORT"
+            value = 9999
+          }
 
           volume_mount {
             name = "kafka-data"
             mount_path = "/opt/kafka/data"
           }
         }
+
+        container {
+          image = "sscaling/jmx-prometheus-exporter:0.11.0"
+          name  = "jmx-exporter"
+
+          port {
+            container_port = "5556"
+          }
+
+          env {
+            name  = "CONFIG_YML"
+            value = "/var/jmx_exporter/config.yml"
+          }
+
+          volume_mount {
+            name       = "jmx-exporter-config"
+            mount_path = "/var/jmx_exporter"
+          }
+        }
+
+        volume {
+          name = "jmx-exporter-config"
+
+          config_map {
+            name = "${kubernetes_config_map.kafka_jmx_exporter_config.metadata.0.name}"
+
+            items {
+              key  = "config.yml"
+              path = "config.yml"
+            }
+          }
+        }
+
+        volume {
+          name      = "data"
+          empty_dir = {}
+        }
+
       }
     }
     volume_claim_template {
