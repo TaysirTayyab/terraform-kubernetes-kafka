@@ -95,6 +95,18 @@ resource "kubernetes_stateful_set" "kafka" {
           image = "confluentinc/cp-kafka:${var.kafka_container_image_version}"
           name = "server"
 
+          resources {
+            requests {
+              memory = "${lookup(var.bam_resource_requests["kafka"], "memory")}"
+              cpu    = "${lookup(var.bam_resource_requests["kafka"], "cpu")}"
+            }
+
+            limits {
+              memory = "${lookup(var.bam_resource_limits["kafka"], "memory")}"
+              cpu    = "${lookup(var.bam_resource_limits["kafka"], "cpu")}"
+            }
+          }
+
           port {
             container_port = 9092
           }
