@@ -22,7 +22,6 @@ variable "zookeeper_container_image_version" {
   default     = "5.3.0"
 }
 
-
 variable "bam_resource_limits" {
   type = "map"
 }
