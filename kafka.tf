@@ -149,6 +149,10 @@ resource "kubernetes_stateful_set" "kafka" {
             name  = "KAFKA_JMX_PORT"
             value = 9999
           }
+          env {
+            name  = "KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE"
+            value = "false"
+          }
 
           volume_mount {
             name = "kafka-data"
