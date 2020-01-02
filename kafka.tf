@@ -99,13 +99,13 @@ resource "kubernetes_stateful_set" "kafka" {
 
           resources {
             requests {
-              memory = "${lookup(var.bam_resource_requests["kafka"], "memory")}"
-              cpu    = "${lookup(var.bam_resource_requests["kafka"], "cpu")}"
+              memory = "${lookup(var.kafka_resource_requests, "memory")}"
+              cpu    = "${lookup(var.kafka_resource_requests, "cpu")}"
             }
 
             limits {
-              memory = "${lookup(var.bam_resource_limits["kafka"], "memory")}"
-              cpu    = "${lookup(var.bam_resource_limits["kafka"], "cpu")}"
+              memory = "${lookup(var.kafka_resource_limits, "memory")}"
+              cpu    = "${lookup(var.kafka_resource_limits, "cpu")}"
             }
           }
 

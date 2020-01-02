@@ -4,6 +4,18 @@
 
 Initial GA release.
 
+### Breaking Changes
+
+* **removed** `kafka-replicas` and replaced with `kafka_replicas`
+* **removed** `zookeeper-replicas` and replced with `zookeeper_replicas`
+* **removed** `bam_resource_requests`, use `kafka_resource_requests`, and `zookeeper_resource_requests`
+* **removed** `bam_resource_limits`, use `kafka_resource_limits` and `zookeeper_resource_limits`
+
+* **added** `kafka_resource_requests["cpu"]` and `kafka_resource_requests["memory"]`
+* **added** `kafka_resource_limits["cpu"]` and `kafka_resource_limits["memory"]`
+* **added** `zookeeper_resource_requests["cpu"]` and `zookeeper_resource_requests["memory"]`
+* **added** `zookeeper_resource_limits["cpu"]` and `zookeeper_resource_limits["memory"]`
+
 ### Bug Fixes
 
 * SAASOPS-461: Disable Confluent Metrics from ELK Kafka and ELK ZK

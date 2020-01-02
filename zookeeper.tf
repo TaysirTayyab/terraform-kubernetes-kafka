@@ -100,6 +100,18 @@ EOF
             ,
           ]
 
+          resources {
+            requests {
+              memory = "${lookup(var.zookeeper_resource_requests, "memory")}"
+              cpu    = "${lookup(var.zookeeper_resource_requests, "cpu")}"
+            }
+
+            limits {
+              memory = "${lookup(var.zookeeper_resource_limits, "memory")}"
+              cpu    = "${lookup(var.zookeeper_resource_limits, "cpu")}"
+            }
+          }
+
           port {
             container_port = 2181
             name           = "client"
