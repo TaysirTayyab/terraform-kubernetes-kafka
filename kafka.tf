@@ -12,7 +12,7 @@ EOF
 }
 
 data "template_file" "kafka_host_names" {
-  count    = "${var.kafka-replicas}"
+  count    = "${var.kafka_replicas}"
   template = "kafka-${count.index}.${kubernetes_service.kafka.metadata.0.name}.${var.kube_namespace}.svc.cluster.local"
 }
 
@@ -50,15 +50,14 @@ resource "kubernetes_stateful_set" "kafka" {
   }
 
   spec {
-    replicas = "${var.kafka-replicas}"
+    service_name = "kafka"
+    replicas     = "${var.kafka_replicas}"
+
     selector {
       match_labels {
         app = "kafka"
       }
     }
-
-    service_name = "kafka"
-    replicas = "${var.kafka-replicas}"
 
     template {
       metadata {
@@ -128,20 +127,19 @@ resource "kubernetes_stateful_set" "kafka" {
 
           env {
             name = "KAFKA_ZOOKEEPER_CONNECT"
-            # value = "zookeeper:2181"
             value = "${join(",", data.template_file.zookeeper_host_names.*.rendered)}"
           }
           env {
             name = "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR"
-            value = "${var.kafka-replicas}"
+            value = "${var.kafka_replicas}"
           }
           env {
             name  = "KAFKA_NUM_PARTITIONS"
-            value = "${var.kafka-replicas}"
+            value = "${var.kafka_replicas}"
           }
           env {
             name  = "KAFKA_DEFAULT_REPLICATION_FACTOR"
-            value = "${var.kafka-replicas}"
+            value = "${var.kafka_replicas}"
           }
           env {
             name  = "KAFKA_JMX_HOSTNAME"

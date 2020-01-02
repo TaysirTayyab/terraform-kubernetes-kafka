@@ -1,5 +1,5 @@
 data "template_file" "zookeeper_host_names" {
-  count    = "${var.zookeeper-replicas}"
+  count    = "${var.zookeeper_replicas}"
   template = "zookeeper-${count.index}.${kubernetes_service.zookeeper.metadata.0.name}.${var.kube_namespace}.svc.cluster.local"
 }
 
@@ -55,7 +55,7 @@ resource "kubernetes_stateful_set" "zookeeper" {
     }
 
     service_name = "zookeeper"
-    replicas = "${var.zookeeper-replicas}"
+    replicas = "${var.zookeeper_replicas}"
 
     template {
       metadata {

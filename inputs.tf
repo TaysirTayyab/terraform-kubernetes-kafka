@@ -1,13 +1,10 @@
 variable "kube_namespace" {
-
   default = ""
 }
 
-variable "kafka-replicas" {
-  default = ""
-}
-variable "zookeeper-replicas" {
-  default = ""
+variable "kafka_replicas" {
+  description = "The number of Kafka brokers to run. 3 is recommended for production."
+  default     = 1
 }
 
 variable "kafka_container_image_version" {
