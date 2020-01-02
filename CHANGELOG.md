@@ -1,8 +1,9 @@
 # CHANGELOG
 
-## v1.0.0
+## [Unreleased Major Version PR#9]
 
-Initial GA release.
+* SAASOPS-461: Disable Confluent Metrics from ELK Kafka and ELK ZK
+* standardized and genericized several variables names
 
 ### Breaking Changes
 
@@ -16,9 +17,9 @@ Initial GA release.
 * **added** `zookeeper_resource_requests["cpu"]` and `zookeeper_resource_requests["memory"]`
 * **added** `zookeeper_resource_limits["cpu"]` and `zookeeper_resource_limits["memory"]`
 
-### Bug Fixes
+## v1.0.0
 
-* SAASOPS-461: Disable Confluent Metrics from ELK Kafka and ELK ZK
+Initial GA release.
 
 ## v0.1.0
 
