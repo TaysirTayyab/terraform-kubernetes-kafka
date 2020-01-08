@@ -1,5 +1,5 @@
 data "template_file" "zookeeper_host_names" {
-  count    = "${var.zookeeper-replicas}"
+  count    = "${var.zookeeper_replicas}"
   template = "zookeeper-${count.index}.${kubernetes_service.zookeeper.metadata.0.name}.${var.kube_namespace}.svc.cluster.local"
 }
 
@@ -36,7 +36,6 @@ resource "kubernetes_service" "zookeeper" {
   }
 }
 
-
 resource "kubernetes_stateful_set" "zookeeper" {
   metadata {
     name      = "zookeeper"
@@ -55,7 +54,7 @@ resource "kubernetes_stateful_set" "zookeeper" {
     }
 
     service_name = "zookeeper"
-    replicas = "${var.zookeeper-replicas}"
+    replicas     = "${var.zookeeper_replicas}"
 
     template {
       metadata {
@@ -63,27 +62,31 @@ resource "kubernetes_stateful_set" "zookeeper" {
           app = "zookeeper"
         }
       }
+
       spec {
         affinity {
           pod_anti_affinity {
             preferred_during_scheduling_ignored_during_execution {
               weight = 100
+
               pod_affinity_term {
                 topology_key = "kubernetes.io/hostname"
+
                 label_selector {
                   match_expressions {
-                    key = "app"
+                    key      = "app"
                     operator = "In"
-                    values = ["zookeeper"]
+                    values   = ["zookeeper"]
                   }
                 }
               }
             }
           }
         }
+
         container {
           image = "confluentinc/cp-zookeeper:${var.zookeeper_container_image_version}"
-          name = "zookeeper"
+          name  = "zookeeper"
 
           # this hack is copied from the confluent helm chart
           # https://github.com/confluentinc/cp-helm-charts/blob/master/charts/cp-zookeeper/templates/statefulset.yaml
@@ -97,19 +100,31 @@ EOF
             ,
           ]
 
+          resources {
+            requests {
+              memory = "${lookup(var.zookeeper_resource_requests, "memory")}"
+              cpu    = "${lookup(var.zookeeper_resource_requests, "cpu")}"
+            }
+
+            limits {
+              memory = "${lookup(var.zookeeper_resource_limits, "memory")}"
+              cpu    = "${lookup(var.zookeeper_resource_limits, "cpu")}"
+            }
+          }
+
           port {
             container_port = 2181
-            name = "client"
+            name           = "client"
           }
 
           port {
             container_port = 2888
-            name = "server"
+            name           = "server"
           }
 
           port {
             container_port = 3888
-            name = "election"
+            name           = "election"
           }
 
           env {
@@ -123,13 +138,13 @@ EOF
           }
 
           volume_mount {
-            name = "data"
+            name       = "data"
             mount_path = "/zookeeper/data"
           }
         }
 
         volume {
-          name = "data"
+          name      = "data"
           empty_dir = {}
         }
       }

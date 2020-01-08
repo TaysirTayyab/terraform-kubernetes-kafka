@@ -12,7 +12,7 @@ EOF
 }
 
 data "template_file" "kafka_host_names" {
-  count    = "${var.kafka-replicas}"
+  count    = "${var.kafka_replicas}"
   template = "kafka-${count.index}.${kubernetes_service.kafka.metadata.0.name}.${var.kube_namespace}.svc.cluster.local"
 }
 
@@ -32,33 +32,32 @@ resource "kubernetes_service" "kafka" {
       target_port = 9092
       name        = "client"
     }
+
     cluster_ip = "None"
   }
 }
-
 
 resource "kubernetes_stateful_set" "kafka" {
   depends_on = ["kubernetes_stateful_set.zookeeper"]
 
   metadata {
-    name      = "kafka"  #???
+    name      = "kafka"                 #???
     namespace = "${var.kube_namespace}"
 
     labels {
-      app       = "kafka"
+      app = "kafka"
     }
   }
 
   spec {
-    replicas = "${var.kafka-replicas}"
+    service_name = "kafka"
+    replicas     = "${var.kafka_replicas}"
+
     selector {
       match_labels {
         app = "kafka"
       }
     }
-
-    service_name = "kafka"
-    replicas = "${var.kafka-replicas}"
 
     template {
       metadata {
@@ -78,32 +77,35 @@ resource "kubernetes_stateful_set" "kafka" {
           pod_anti_affinity {
             preferred_during_scheduling_ignored_during_execution {
               weight = 100
+
               pod_affinity_term {
                 topology_key = "kubernetes.io/hostname"
+
                 label_selector {
                   match_expressions {
-                    key = "app"
+                    key      = "app"
                     operator = "In"
-                    values = ["kafka"]
+                    values   = ["kafka"]
                   }
                 }
               }
             }
           }
         }
+
         container {
           image = "confluentinc/cp-kafka:${var.kafka_container_image_version}"
-          name = "server"
+          name  = "server"
 
           resources {
             requests {
-              memory = "${lookup(var.bam_resource_requests["kafka"], "memory")}"
-              cpu    = "${lookup(var.bam_resource_requests["kafka"], "cpu")}"
+              memory = "${lookup(var.kafka_resource_requests, "memory")}"
+              cpu    = "${lookup(var.kafka_resource_requests, "cpu")}"
             }
 
             limits {
-              memory = "${lookup(var.bam_resource_limits["kafka"], "memory")}"
-              cpu    = "${lookup(var.bam_resource_limits["kafka"], "cpu")}"
+              memory = "${lookup(var.kafka_resource_limits, "memory")}"
+              cpu    = "${lookup(var.kafka_resource_limits, "cpu")}"
             }
           }
 
@@ -127,33 +129,42 @@ resource "kubernetes_stateful_set" "kafka" {
           }
 
           env {
-            name = "KAFKA_ZOOKEEPER_CONNECT"
-            # value = "zookeeper:2181"
+            name  = "KAFKA_ZOOKEEPER_CONNECT"
             value = "${join(",", data.template_file.zookeeper_host_names.*.rendered)}"
           }
+
           env {
-            name = "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR"
-            value = "${var.kafka-replicas}"
+            name  = "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR"
+            value = "${var.kafka_replicas}"
           }
+
           env {
             name  = "KAFKA_NUM_PARTITIONS"
-            value = "${var.kafka-replicas}"
+            value = "${var.kafka_replicas}"
           }
+
           env {
             name  = "KAFKA_DEFAULT_REPLICATION_FACTOR"
-            value = "${var.kafka-replicas}"
+            value = "${var.kafka_replicas}"
           }
+
           env {
             name  = "KAFKA_JMX_HOSTNAME"
             value = "localhost"
           }
+
           env {
             name  = "KAFKA_JMX_PORT"
             value = 9999
           }
 
+          env {
+            name  = "KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE"
+            value = "false"
+          }
+
           volume_mount {
-            name = "kafka-data"
+            name       = "kafka-data"
             mount_path = "/opt/kafka/data"
           }
         }
@@ -194,20 +205,21 @@ resource "kubernetes_stateful_set" "kafka" {
           name      = "data"
           empty_dir = {}
         }
-
       }
     }
+
     volume_claim_template {
       metadata {
         name = "kafka-data"
       }
+
       spec {
-        access_modes = ["ReadWriteOnce"]
-        storage_class_name = "standard"   # want a different type??
+        access_modes       = ["ReadWriteOnce"]
+        storage_class_name = "standard"        # want a different type??
+
         resources {
           requests {
             storage = "1Gi"
-
           }
         }
       }

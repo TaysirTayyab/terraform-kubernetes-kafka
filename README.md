@@ -19,13 +19,19 @@ module "kafka_zk_cluster" {
 
 ## Inputs
 
+## Inputs
+
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
 | kafka\_container\_image\_version | The Confluent Kafka image version. | string | `"5.3.0"` | no |
-| kafka\_replicas | The number of Kafka replicas to run. 3 is recommended for production. | string | `"1"` | no |
+| kafka\_replicas | The number of Kafka brokers to run. 3 is recommended for production. | string | `"1"` | no |
+| kafka\_resource\_limits | The resource limit for Kafka. Brokers exceeding these limits will be evicted. Should be a map with keys "cpu" and "memory". | map | `<map>` | no |
+| kafka\_resource\_requests | The requested resources for kafka from the kubernetes master. Should be a map with keys "cpu" and "memory". | map | `<map>` | no |
 | kube\_namespace | The namespace where the kafka cluster will be deployed. | string | n/a | yes |
 | zookeeper\_container\_image\_version | The Confluent Zookeeper image version. | string | `"5.3.0"` | no |
 | zookeeper\_replicas | The number of Zookeeper replicas to run. 3 is recommended for production. | string | `"1"` | no |
+| zookeeper\_resource\_limits | The resource limit for Zookeeper. Replicas exceeding these limits will be evicted. Should be a map with keys "cpu" and "memory". | map | `<map>` | no |
+| zookeeper\_resource\_requests | The requested resources for zookeeper from the kubernetes master. Should be a map with keys "cpu" and "memory". | map | `<map>` | no |
 
 ## Outputs
 
@@ -33,4 +39,3 @@ module "kafka_zk_cluster" {
 |------|-------------|
 | kafka\_service\_addresses | A list of client service address for each of the Kafka replicas as host:port. |
 | zookeeper\_service\_addresses | A list of client service addresses for each of the Zookeeper replicas as host:port. |
-
