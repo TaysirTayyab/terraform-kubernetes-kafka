@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [Unreleased Major Version PR#9]
+## v1.1.0
 
 * SAASOPS-461: Disable Confluent Metrics from ELK Kafka and ELK ZK
 * standardized and genericized several variables names
