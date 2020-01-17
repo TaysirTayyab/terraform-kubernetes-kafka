@@ -7,6 +7,11 @@ variable "kafka_replicas" {
   default     = 1
 }
 
+variable "kafka_min_insync_replicas" {
+  description = "Minimum number of online replicas in sync"
+  default     = 1
+}
+
 variable "kafka_container_image_version" {
   description = "The Confluent Kafka image version."
   default     = "5.3.0"

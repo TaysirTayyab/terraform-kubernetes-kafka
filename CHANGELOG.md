@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.1.1 
+
+* SAASOPS-470: added the kafka min insync replicas option. 
+
 ## v1.1.0
 
 * SAASOPS-461: Disable Confluent Metrics from ELK Kafka and ELK ZK
