@@ -127,6 +127,11 @@ resource "kubernetes_stateful_set" "kafka" {
             name  = "KAFKA_ADVERTISED_LISTENERS"
             value = "PLAINTEXT://$(POD_NAME).${kubernetes_service.kafka.metadata.0.name}.${var.kube_namespace}.svc.cluster.local:9092"
           }
+          
+          env {
+            name  = "KAFKA_MIN_INSYNC_REPLICAS"
+            value = "${var.kafka_min_insync_replicas}"
+          }
 
           env {
             name  = "KAFKA_ZOOKEEPER_CONNECT"
