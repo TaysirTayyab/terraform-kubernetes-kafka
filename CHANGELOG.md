@@ -2,7 +2,7 @@
 
 ## v1.1.1 
 
-* SAASOPS-470: added the kafka min insync replicas option. 
+* SAASOPS-470: added the kafka min insync replicas option `kafka_min_insync_replicas` with default 1
 
 ## v1.1.0
 
