@@ -47,14 +47,18 @@ resource "kubernetes_stateful_set" "zookeeper" {
   }
 
   spec {
+    service_name = "zookeeper"
+    replicas     = "${var.zookeeper_replicas}"
+
+    update_strategy {
+      type = "RollingUpdate"
+    }
+
     selector {
       match_labels {
         app = "zookeeper"
       }
     }
-
-    service_name = "zookeeper"
-    replicas     = "${var.zookeeper_replicas}"
 
     template {
       metadata {

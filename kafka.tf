@@ -53,6 +53,10 @@ resource "kubernetes_stateful_set" "kafka" {
     service_name = "kafka"
     replicas     = "${var.kafka_replicas}"
 
+    update_strategy {
+      type = "RollingUpdate"
+    }
+
     selector {
       match_labels {
         app = "kafka"
