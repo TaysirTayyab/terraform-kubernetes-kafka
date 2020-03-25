@@ -12,6 +12,10 @@ variable "kafka_min_insync_replicas" {
   default     = 1
 }
 
+variable "kafka_jvm_memory_allocation" {
+  type = "map"
+}
+
 variable "kafka_container_image_version" {
   description = "The Confluent Kafka image version."
   default     = "5.3.0"

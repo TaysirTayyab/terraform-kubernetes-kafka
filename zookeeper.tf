@@ -145,11 +145,24 @@ EOF
             name       = "data"
             mount_path = "/zookeeper/data"
           }
+          
+          volume_mount {
+            name       = "wal"
+            mount_path = "/zookeeper/wal"
+          }
         }
 
         volume {
           name      = "data"
           empty_dir = {}
+        }
+
+        volume {
+          name = "wal"
+
+          empty_dir {
+            medium = "Memory"
+          }
         }
       }
     }
