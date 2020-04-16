@@ -138,6 +138,26 @@ resource "kubernetes_stateful_set" "kafka" {
           }
 
           env {
+            name  = "KAFKA_LOG_RETENTION_BYTES"
+            value = "100000000"
+          }
+
+          env {
+            name  = "KAFKA_LOG_RETENTION_HOURS"
+            value = "168"
+          }
+
+          env {
+            name  = "KAFKA_LISTENERS"
+            value = "PLAINTEXT://0.0.0.0:9092"
+          }
+
+          env {
+            name  = "KAFKA_LOG_DIRS"
+            value = "/kafka/kafka"
+          }
+
+          env {
             name  = "KAFKA_ZOOKEEPER_CONNECT"
             value = "${join(",", data.template_file.zookeeper_host_names.*.rendered)}"
           }
@@ -148,6 +168,11 @@ resource "kubernetes_stateful_set" "kafka" {
           }
 
           env {
+            name  = "KAFKA_CONNECTIONS_MAX_IDLE_MS"
+            value = "3600000"
+          }
+
+          env {
             name  = "KAFKA_NUM_PARTITIONS"
             value = "${var.kafka_replicas}"
           }
@@ -155,6 +180,11 @@ resource "kubernetes_stateful_set" "kafka" {
           env {
             name  = "KAFKA_DEFAULT_REPLICATION_FACTOR"
             value = "${var.kafka_replicas}"
+          }
+
+          env {
+            name  = "KAFKA_HEAP_OPTS"
+            value = "-Xms${lookup(var.kafka_jvm_memory_allocation["kafka"], "initial")} -Xmx${lookup(var.kafka_jvm_memory_allocation["kafka"], "limit")}"
           }
 
           env {
