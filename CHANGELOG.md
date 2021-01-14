@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v1.1.4
+
+* minor syntax adjustments for terraform 0.12 compatibility
+
+## v1.1.3
+
+* **added required** `kafka_jvm_memory_alloaction` which has two keys, `initial` and `max` for specifying the Java heap size
+
+## v1.1.2
+
+* allowing rolling updates for kafka/zk stateful sets
+
 ## v1.1.1 
 
 * SAASOPS-470: added the kafka min insync replicas option `kafka_min_insync_replicas` with default 1

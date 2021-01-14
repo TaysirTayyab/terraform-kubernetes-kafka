@@ -4,7 +4,7 @@ resource "kubernetes_config_map" "kafka_jmx_exporter_config" {
     namespace = "${var.kube_namespace}"
   }
 
-  data {
+  data = {
     "config.yml" = <<EOF
 hostPort: localhost:9999
 EOF
@@ -41,7 +41,7 @@ resource "kubernetes_stateful_set" "kafka" {
   depends_on = ["kubernetes_stateful_set.zookeeper"]
 
   metadata {
-    name      = "kafka"                 #???
+    name      = "kafka"
     namespace = "${var.kube_namespace}"
 
     labels {
@@ -69,7 +69,7 @@ resource "kubernetes_stateful_set" "kafka" {
           app = "kafka"
         }
 
-        annotations {
+        annotations = {
           "prometheus.io/scrape" = "true"
           "prometheus.io/path"   = "/"
           "prometheus.io/port"   = 5556
